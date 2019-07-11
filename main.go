@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/google/uuid"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"os"
@@ -39,9 +38,8 @@ func main() {
 		},
 	}
 
-	wait.Forever(func() {
-		setupLeaderElection(&config)
-	}, time.Second*5)
+	go setupLeaderElection(&config)
+	select {}
 }
 func shareTask() {
 	for {
