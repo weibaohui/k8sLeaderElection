@@ -31,7 +31,8 @@ func main() {
 		Client:     getClient(),
 		OnStartedLeading: func(i chan struct{}) {
 			fmt.Println("leader now")
-			go leader()
+			go leader(i)
+
 		},
 		OnStoppedLeading: func() {
 			fmt.Println("die die die")
@@ -47,11 +48,21 @@ func shareTask() {
 		fmt.Println(time.Now().Format(time.RFC3339) + "shareTask")
 	}
 }
-func leader() {
+func leader(i chan struct{}) {
 	for {
 		time.Sleep(time.Second)
-		fmt.Println(time.Now().Format(time.RFC3339) + "leader-leader-leader-leader-leader")
+		select {
+		case _, ok := <-i:
+			if !ok {
+				fmt.Println("结束 leader")
+				return
+			}
+		default:
+			fmt.Println(time.Now().Format(time.RFC3339) + "leader-leader-leader-leader-leader")
+		}
 	}
+
+
 }
 
 type leaderElectionConfig struct {
@@ -144,7 +155,7 @@ func setupLeaderElection(config *leaderElectionConfig) {
 		},
 	}
 
-	ttl := 30 * time.Second
+	ttl := 10 * time.Second
 	var err error
 
 	elector, err = leaderelection.NewLeaderElector(leaderelection.LeaderElectionConfig{
