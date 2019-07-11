@@ -23,11 +23,12 @@ import (
 )
 
 func main() {
+	go Start()
 	go shareTask()
 	config := leaderElectionConfig{
 		Name:       "leaderElectionName",
 		Namespace:  "default",
-		ElectionID: "xxxxxx",
+		ElectionID: "k8s-leader-election",
 		Client:     getClient(),
 		OnStartedLeading: func(i chan struct{}) {
 			fmt.Println("leader now")
@@ -45,13 +46,13 @@ func main() {
 func shareTask() {
 	for {
 		time.Sleep(time.Second * 2)
-		fmt.Println("shareTask")
+		fmt.Println(time.Now().Format(time.RFC3339) + "shareTask")
 	}
 }
 func leader() {
 	for {
 		time.Sleep(time.Second)
-		fmt.Println("leader-leader-leader-leader-leader")
+		fmt.Println(time.Now().Format(time.RFC3339) + "leader-leader-leader-leader-leader")
 	}
 }
 
@@ -140,7 +141,7 @@ func setupLeaderElection(config *leaderElectionConfig) {
 		ConfigMapMeta: metav1.ObjectMeta{Namespace: config.Namespace, Name: config.ElectionID},
 		Client:        config.Client.CoreV1(),
 		LockConfig: resourcelock.ResourceLockConfig{
-			Identity:      uuid.New().String(),
+			Identity:      hostname + ":" + uuid.New().String(),
 			EventRecorder: recorder,
 		},
 	}
